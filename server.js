@@ -8,6 +8,7 @@
 var express = require('express');
 var http = require('http');
 var w2mdb = require('./w2mdb.js');
+var config = require('./config.js');
 // Logging
 var morgan = require('morgan');
 
@@ -19,12 +20,12 @@ var bodyParser = require('body-parser')
 var SlackBot = require('slackbots');
  
 // create a bot   xoxb-012345678-ABC1DFG2HIJ3
-
+// http://www.emoji-cheat-sheet.com/
 try {
 
     var bot = new SlackBot({
-        token: 'xoxb-012345678-ABC1DFG2HIJ3', // Add a bot https://my.slack.com/services/new/bot and put the token    
-        name: 'Test Bot'
+        token: config.slack.token, // Add a bot https://my.slack.com/services/new/bot and put the token    
+        name: config.slack.name
     });
 
 
