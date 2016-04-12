@@ -1,0 +1,28 @@
+{
+  "name": "who-bot",
+  "version": "0.1.0",
+  "description": "Parses output from airodump-ng and reports known users to slack",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ebiroll/who-bot.git"
+  },
+  "keywords": [
+    "slack",
+    "node.js"
+  ],
+  "author": "Olof Astrand",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ebiroll/who-bot/issues"
+  },
+  "homepage": "https://github.com/Ebiroll/who-bot"
+  "dependencies": {
+    "mongodb" :  "*",
+    "slackbots" :"*",
+    "express": "^4.7.2",
+  }
+}
