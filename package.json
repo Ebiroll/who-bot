@@ -19,10 +19,12 @@
   "bugs": {
     "url": "https://github.com/Ebiroll/who-bot/issues"
   },
-  "homepage": "https://github.com/Ebiroll/who-bot"
+  "homepage": "https://github.com/Ebiroll/who-bot",
   "dependencies": {
-    "mongodb" :  "*",
-    "slackbots" :"*",
-    "express": "^4.7.2",
+    "mongodb" :     "*",
+    "body-parser" : "*",
+    "morgan" :      "*",
+    "slackbots" :   "*",
+    "express": "^4.7.2"
   }
 }

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wifi node-js </title>
+    <link rel="stylesheet" type="text/css" href="lib/w2ui-1.4.3.min.css" />
+    <script src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/w2ui-1.4.3.min.js"></script>
+<STYLE type="text/css">
+   #main {
+    height:100vh;
+} 
+</STYLE>
+</head>
+
+<body>
+
+    
+<div id="main" style="width: 100%"></div>
+
+
+<script type="text/javascript">
+
+var config = {
+    
+        wifidata : { 
+            name : 'essid',
+            url  : '/api/essid',
+            show    : {
+                toolbar  : true,
+                toolbarAdd: true,
+                toolbarSave: true,
+                footer   : true,
+                toolbarDelete	: true
+            },
+            style: 'border: 0px',
+            sortData: [{ field: 'ttime', direction: 'asc' }],
+            searches: [
+                { type: 'text', caption: 'Name', field: 'name' },
+                { type: 'time', caption: 'Lat', field: 'lat' },
+            ],
+            
+            columns: [                
+                { field: '_id', caption: 'id', size: '10%', sortable: true,  editable: { type: 'text' }},
+                { field: 'essid', caption: 'essid', size: '20%', sortable: true,  editable: { type: 'text' }},
+                { field: 'user', caption: 'user', size: '20%', sortable: true,  editable: { type: 'text' }}     
+            ],
+            onSave: function (event) {
+              event.onComplete = function() {
+                w2ui.form.refresh();
+              }
+            },
+            onAdd: function (event) {
+
+                 var ajaxOptions = {
+                    type     : 'POST',
+                    url      : '/api/essid',
+                    data     : {
+                         cmd: "add-record"
+                    },
+                    dataType : 'text'  // expected data type from server
+                  };
+
+                  $.ajax(ajaxOptions)
+                    .done(function (data, status, xhr){
+                       var resultData =  jQuery.parseJSON(data);
+                       var newrec=$.extend(true, resultData.record,{ name : "Double click to edit, then Save" });
+                       //var newrec=resultData.record;
+                       console.log("newrec",newrec);
+                       w2ui.essid.add(newrec);
+                    })
+                   .fail(function(jqXHR, textStatus, errorThrown) {
+                        // Handle error
+                   });
+          },
+        },
+    
+	layout: {
+		name: 'layout',
+		padding: 4,
+		panels: [
+            		{ type: 'top', size: '70%', resizable: true, minSize: 400 },
+			//{ type: 'left', size: '50%', resizable: true, minSize: 200 },
+			{ type: 'main', size: '30%',resizable: true, minSize: 100 },
+                     	{ type: 'right', size: '50%',resizable: true, minSize: 100 }                        
+
+		]
+	},
+        //
+	form: { 
+		header: 'Slack Data',
+		name: 'form',
+                url		: '/api/keys',
+		fields: [
+            		{ name: 'token', type: 'text', html: { caption: 'Token for slack', attr: 'size="12"' } } ,
+			{ name: 'name', type: 'text', html: { caption: 'Name for slack', attr: 'size="12"' } } ,
+            
+		],
+                onSave: function (event) {
+                   event.onComplete = function() {
+                      //w2ui.grid.reload();
+                   }
+                },
+		actions: {
+			New: function () {
+ 			       this.clear();                                
+                               //console.log("Set recid to 1, only one record");
+                               this.recid = 1;
+                               //this.record.repwinbegin=30;
+                               //this.record.repwinend=60*4;
+                               this.refresh();
+ 			},
+			Save: function () {
+                                // Only one document in database
+                                w2ui.form.recid = 1;
+                                w2ui.form.record.recid = 1;
+				var errors = this.validate();
+				if (errors.length > 0) return;
+                                w2ui.form.save();
+			},
+                        Load: function () {
+				w2ui.form.record.recid = 1;
+                                w2ui.form.recid=1;
+                                w2ui.form.reload();
+			}
+
+		}
+	}
+}
+
+$(function () {
+        w2utils.settings.date_format = 'dd/mm/yyyy';
+
+	// initialization
+	$('#main').w2layout(config.layout);
+        w2ui.layout.content('top',$().w2grid(config.wifidata));
+	//w2ui.layout.content('main', $().w2grid(config.grid));
+	w2ui.layout.content('main', $().w2form(config.form));
+	//w2ui.layout.content('right',"<div><img src='schedule.jpg' alt='Schedule'></div>");
+        
+});
+
+
+</script>
+
+</body>
+</html>

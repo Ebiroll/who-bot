@@ -1,0 +1,8 @@
+*.o
+*.a
+*.lo
+*.la
+*.exe
+*.Debug
+*.Release
+node_modules
