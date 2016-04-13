@@ -6,3 +6,4 @@
 *.Debug
 *.Release
 node_modules
+data

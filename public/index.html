@@ -24,7 +24,7 @@ var config = {
     
         wifidata : { 
             name : 'essid',
-            url  : '/api/essid',
+            url  : '/api/wifi',
             show    : {
                 toolbar  : true,
                 toolbarAdd: true,
@@ -41,10 +41,19 @@ var config = {
             
             columns: [                
                 { field: '_id', caption: 'id', size: '10%', sortable: true,  editable: { type: 'text' }},
-                { field: 'essid', caption: 'essid', size: '20%', sortable: true,  editable: { type: 'text' }},
-                { field: 'user', caption: 'user', size: '20%', sortable: true,  editable: { type: 'text' }},     
-                { field: 'alias', caption: 'alias', size: '20%', sortable: true,  editable: { type: 'text' }},      
-                { field: 'emoji', caption: 'emoji', size: '20%', sortable: false,  editable: { type: 'text' }}     
+                { field: 'essid', caption: 'essid', size: '15%', sortable: true,  editable: { type: 'text' }},
+                { field: 'user', caption: 'user', size: '15%', sortable: true,  editable: { type: 'text' }},     
+                { field: 'alias', caption: 'alias', size: '10%', sortable: true,  editable: { type: 'text' }}, 
+                { field: 'report', caption: 'report', size: '5%', sortable: true,  editable: { type: 'int' }}, 
+                { field: 'emoji', caption: 'emoji', size: '10%', sortable: false,  editable: { type: 'text' }}, 
+                { field: 'first', caption: 'firstSeen', size: '10%', sortable: true,  editable: { type: 'text' }},    
+                { field: 'lastD', caption: 'last Date', size: '10%', sortable: true,  editable: { type: 'date' }} ,
+                { field: 'lastT', caption: 'last Seen', size: '10%', sortable: true,  editable: { type: 'time' }} , 
+                { field: 'last', caption: 'last', size: '10%', sortable: true,  editable: { type: 'text' }} ,  
+                { field: 'present', caption: 'present', size: '5%', sortable: true,  editable: { type: 'text' }} ,    
+                { field: 'packets', caption: 'packets', size: '5%', sortable: true,  editable: { type: 'int' }} ,
+                { field: 'pwr', caption: 'pwr', size: '5%', sortable: true,  editable: { type: 'int' }} ,
+                { field: 'probed', caption: 'probed', size: '10%', sortable: true,  editable: { type: 'text' }} 
             ],
             onSave: function (event) {
               event.onComplete = function() {
@@ -55,7 +64,7 @@ var config = {
 
                  var ajaxOptions = {
                     type     : 'POST',
-                    url      : '/api/essid',
+                    url      : '/api/wifi',
                     data     : {
                          cmd: "add-record"
                     },
@@ -65,7 +74,7 @@ var config = {
                   $.ajax(ajaxOptions)
                     .done(function (data, status, xhr){
                        var resultData =  jQuery.parseJSON(data);
-                       var newrec=$.extend(true, resultData.record,{ name : "Double click to edit, then Save" });
+                       var newrec=$.extend(true, resultData.record,{ user : "Double click to edit, then Save" });
                        //var newrec=resultData.record;
                        console.log("newrec",newrec);
                        w2ui.essid.add(newrec);
@@ -130,7 +139,7 @@ var config = {
 }
 
 $(function () {
-        w2utils.settings.date_format = 'dd/mm/yyyy';
+        w2utils.settings.date_format = 'yyyy-mm-dd';
 
 	// initialization
 	$('#main').w2layout(config.layout);

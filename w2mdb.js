@@ -55,7 +55,7 @@
 
 */
 
-var dbs = "mongodb://localhost:27017/w2uidb";
+var dbs = "mongodb://localhost:27017/who";
 
 var mc = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
@@ -154,6 +154,9 @@ function getNextSequence(name,cb) {
     });
 }
 
+exports.getNextSeqNo=function(name,cb) {
+    getNextSequence(name,cb);
+}
 
 // dataitem, contains the document item to extract from the collection
 exports.enumDBMongo = function(req, res, collectionName,dataitem)
@@ -572,8 +575,8 @@ saveRecords = function(req,res,collectionName){
 
 exports.serveDBMongo = function(req, res, collectionName,autoIncVarName)
 {
-    console.log("serveDBMongo body", req);
-    console.log("serverCmd", req.body.cmd);
+    //console.log("serveDBMongo body", req.body);
+    //console.log("serverCmd", req.body.cmd);
 
     switch (req.body.cmd)
     {
