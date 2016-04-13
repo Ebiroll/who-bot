@@ -70,29 +70,31 @@ convert = function(csvString) {
  
 // create a bot   xoxb-012345678-ABC1DFG2HIJ3
 // http://www.emoji-cheat-sheet.com/
-try {
+function reportToSlack(text,emoji) {
+    try {
 
-    var bot = new SlackBot({
-        token: config.slack.token, // Add a bot https://my.slack.com/services/new/bot and put the token    
-        name: config.slack.name
-    });
+        var bot = new SlackBot({
+            token: config.slack.token, // Add a bot https://my.slack.com/services/new/bot and put the token    
+            name: config.slack.name
+        });
 
 
-    bot.on('start', function() {
-        // more information about additional params https://api.slack.com/methods/chat.postMessage 
-        var params = {
-            icon_emoji: ':cat:'
-        };
+        bot.on('start', function() {
+            // more information about additional params https://api.slack.com/methods/chat.postMessage 
+            var params = {
+                icon_emoji: ':cat:'
+            };
 
-        // define channel, where bot exist. You can adjust it there https://my.slack.com/services  
-        bot.postMessageToChannel('office', 'Hello!', params);
+            // define channel, where bot exist. You can adjust it there https://my.slack.com/services  
+            bot.postMessageToChannel('office', text, params);
 
-    });
+        });
+
+    } catch (e) {
+       console.error("Replace token: with valid token");
+    }    
+}
     
-} catch (e) {
-   console.error("Replace token: with valid token");
-}    
-
 // One db connection for everything
 mc.connect(dbs, function(err, mydb) {
     if (err) throw err;
@@ -170,8 +172,8 @@ function openCSVFileAndProcessData() {
                     {
                         if (json_log[lix].MAC==docs[qix].essid) {
                            if (docs[qix].alias.length>1) {
-                              console.log(docs[qix].alias);
-                              console.log(" is here\n");
+                              //console.log(lix,docs[qix].alias);
+                              //console.log(" is logged\n");
                            }
                            if (Number(docs[qix].recid)>maxid)
                            {
@@ -181,7 +183,42 @@ function openCSVFileAndProcessData() {
                            json_log[lix].user=docs[qix].user;
                            json_log[lix].alias=docs[qix].alias;
                            json_log[lix].report=docs[qix].report; 
-                           json_log[lix].recid=docs[qix].recid; 
+                           json_log[lix].recid=Number(docs[qix].recid); 
+                           {
+                                var now = new Date (),
+                                lastSeen = new Date ( docs[qix].last );
+                                // Report missing if not seen for 4 minutes
+                                lastSeen.setMinutes ( lastSeen.getMinutes() + 4 );
+                                
+                                if (docs[qix].report) {
+                                       //console.log(lastSeen , " last seen\n");
+                                       //console.log(now , " now\n");
+                                }
+                                
+                                if (lastSeen<now) {
+                                    json_log[lix].present=0;
+                                    if (Number(docs[qix].present)==1)
+                                    {
+                                        if (docs[qix].report) {
+                                           var report=docs[qix].alias +  " has left the office " + now.getHours() + ":" + now.getMinutes();
+                                           console.log(docs[qix].alias , " has left the building");
+                                           reportToSlack(report,":cat:");
+                                       }
+                                    }
+                                } else {
+                                    json_log[lix].present=1;
+                                    if (Number(docs[qix].present)==0)
+                                    {
+                                        var report=docs[qix].alias +  " entered the office" + now.getHours() + ":" + now.getMinutes();
+                                        if (docs[qix].report) {
+                                          console.log(docs[qix].alias , " entered");
+                                          reportToSlack(report,":cat:");
+                                        }
+                                    }
+                                }
+                                
+                            }
+                           
                        }
                     }
                 }
@@ -196,9 +233,12 @@ function openCSVFileAndProcessData() {
                         json_log[lix].user="";
                         json_log[lix].alias="";
                         json_log[lix].report=0;
+                        json_log[lix].present=0;
                         // Now this might create problems. Record id should be unique! :-P
                         // TODO, use getNextSeqNo()
-                        json_log[lix].recid=lix+maxid;
+                        if (!json_log[lix].recid) {
+                            json_log[lix].recid=lix+maxid;
+                        }
                     }
                     
                     var lastSeen=json_log[lix].last;
