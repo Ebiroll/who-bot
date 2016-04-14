@@ -182,7 +182,25 @@ w2mdb.initCounters("keys",1);
 
 //------ Routing of api ---------
 
+app.use("/api/who",function(req,res,next){   
+        var text = "";
+        mydb.collection("wifi", function(err, collection) {
+            collection.find().toArray(function(err, docs) {
+              for (var qix = 0; qix < docs.length; qix++)
+              {
+                  docs[qix].seen=0;
+                  if (Number(docs[qix].present)==1 & docs[qix].alias.length>1) {
+                      text=docs[qix].alias + "," + text; 
+                  } if (Number(docs[qix].seen)==1) {
+                      text=docs[qix].alias + " lurks seen at " + docs[qix].timeT + " ," + text;                                   
+                  }
+              }
+              res.send(text);                                                    
+          });
+      });
 
+    
+ });
 
 app.use("/api/wifi",function(req,res,next){   
 	w2mdb.serveDBMongo(req,res,"wifi");
@@ -214,9 +232,11 @@ function openCSVFileAndProcessData() {
             collection.find().toArray(function(err, docs) {
                 for (var lix=0;lix<json_log.length;lix++)
                 {                   
+                    json_log[lix].found_match=false;
                     for (var qix = 0; qix < docs.length; qix++)
                     {
                         if (json_log[lix].MAC==docs[qix].essid) {
+                           json_log[lix].found_match=true;
                            if (docs[qix].alias.length>1) {
                               //console.log(lix,docs[qix].alias);
                               //console.log(" is logged\n");
@@ -278,7 +298,7 @@ function openCSVFileAndProcessData() {
                     // Set id to mac..
                     doc._id=json_log[lix].MAC;
                     json_log[lix].essid=json_log[lix].MAC;
-                    if (!json_log[lix].user) {
+                    if (!json_log[lix].found_match) {
                         json_log[lix].user="";
                         json_log[lix].alias="";
                         json_log[lix].report=0;
