@@ -145,8 +145,7 @@ app.use(function (req, res, next) {
                         collection.find().toArray(function(err, docs) {
                           for (var qix = 0; qix < docs.length; qix++)
                           {
-                              docs[qix].seen=0;
-                              if (Number(docs[qix].present)==1) {
+                              if (Number(docs[qix].present)==1 & docs[qix].alias.length>1) {
                                   text=docs[qix].alias + "," + text; 
                               } if (Number(docs[qix].seen)==1) {
                                   text=docs[qix].alias + " lurks seen at " + docs[qix].timeT + " ," + text;                                   
@@ -154,10 +153,8 @@ app.use(function (req, res, next) {
                           }
                         bot.postMessageToChannel(config.slack.channel, text, params);                                                    
                       });
-                  });
-                    
+                  });                    
                 }
-
             });
 
         } catch (e) {
@@ -192,7 +189,6 @@ app.use("/api/who",function(req,res,next){
             collection.find().toArray(function(err, docs) {
               for (var qix = 0; qix < docs.length; qix++)
               {
-                  docs[qix].seen=0;
                   if (Number(docs[qix].present)==1 & docs[qix].alias.length>1) {
                       text=docs[qix].alias + "," + text; 
                   } if (Number(docs[qix].seen)==1) {
