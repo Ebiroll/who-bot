@@ -670,32 +670,30 @@ exports.serveDBMongo = function(req, res, collectionName,autoIncVarName)
             break;
         case 'delete-records':
             var delsel = req.body.selected;
-            //console.log("delete-records=", Number(delsel[0]));
+            console.log("delete-records=", delsel.length);
             // Note Only first selected record is deleted
-            mc.connect(dbs, function(err, db) {
-                if (err)
-                    throw(err);
+            getDB(function(db) {     
+                    db.collection(collectionName, function(err, collection) { 
 
-                db.collection(collectionName, function(err, collection) {
-                    var toRem = Number(delsel[0]);
+                        for (var ix=0;ix<delsel.length;ix++) {
+                            var toRem = Number(delsel[ix]);
+                            console.log("torem=",toRem);
 
-                    collection.remove({
-                        recid: toRem
-                    }, function(err, removed) {
-                        //console.log("removed=",removed);
-                        // Rearrange the recid numbering, should not be necessary
-                        //orderData(collectionName);
-
-                        var ok_response = {
-                            status: "sucess"
+                            collection.remove({
+                                recid: toRem
+                            }, function(err, removed) {
+                                //console.log("removed=",removed);
+                                // Rearrange the recid numbering, should not be necessary
+                                // orderData(collectionName);
+                            });
                         };
-
+                        // Not removed yet, send sucess anyways...
+                        var ok_response = {
+                                status: "sucess"
+                        };
                         res.send(ok_response);
-                        db.close();
                     });
-                });
             });
-
 
             //console.log(delsel);
             break;
@@ -716,7 +714,7 @@ exports.serveDBMongo = function(req, res, collectionName,autoIncVarName)
 
 // Reorder all documents  in the collection with increasing recid:s
 // Not currently used
-orderData = function(collectionName)
+exports.orderData = function(collectionName)
 {
     //console.log("order recid");
     mc.connect(dbs, function(err, db) {

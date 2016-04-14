@@ -180,6 +180,10 @@ var w2mdb = require('./w2mdb.js');
 
 w2mdb.initCounters("keys",1);
 
+// Reuse and rearrange recid at startup,
+console.log("Resetting recids");
+w2mdb.orderData("wifi");
+
 //------ Routing of api ---------
 
 app.use("/api/who",function(req,res,next){   
