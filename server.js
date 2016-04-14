@@ -71,28 +71,31 @@ convert = function(csvString) {
 // create a bot   xoxb-012345678-ABC1DFG2HIJ3
 // http://www.emoji-cheat-sheet.com/
 function reportToSlack(text,emoji) {
-    try {
+    if (config.slack.use) 
+    {
+        try {
 
-        var bot = new SlackBot({
-            token: config.slack.token, // Add a bot https://my.slack.com/services/new/bot and put the token    
-            name: config.slack.name
-        });
+            var bot = new SlackBot({
+                token: config.slack.token, // Add a bot https://my.slack.com/services/new/bot and put the token    
+                name: config.slack.name
+            });
 
 
-        bot.on('start', function() {
-            // more information about additional params https://api.slack.com/methods/chat.postMessage 
-            var params = {
-                icon_emoji: ':cat:'
-            };
+            bot.on('start', function() {
+                // more information about additional params https://api.slack.com/methods/chat.postMessage 
+                var params = {
+                    icon_emoji: ':cat:'
+                };
 
-            // define channel, where bot exist. You can adjust it there https://my.slack.com/services  
-            bot.postMessageToChannel('office', text, params);
+                // define channel, where bot exist. You can adjust it there https://my.slack.com/services  
+                bot.postMessageToChannel(config.slack.channel, text, params);
 
-        });
+            });
 
-    } catch (e) {
-       console.error("Replace token: with valid token");
-    }    
+        } catch (e) {
+           console.error("Replace token: with valid token");
+        }    
+    }
 }
     
 // One db connection for everything
@@ -118,6 +121,49 @@ app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Headers: Content-Type, Content-Range, Content-Disposition, Content-Description');
     next();
 });
+
+    if (config.slack.use) 
+    {
+        try {
+
+            var bot = new SlackBot({
+                token: config.slack.token, // Add a bot https://my.slack.com/services/new/bot and put the token    
+                name: config.slack.name
+            });
+
+
+            bot.on('message', function(data) {
+                // more information about additional params https://api.slack.com/methods/chat.postMessage 
+                var params = {
+                    icon_emoji: ':cat:'
+                };
+
+                //console.log("message ",data);
+                if (data.text=='who') {
+                    var text = "";
+                    mydb.collection("wifi", function(err, collection) {
+                        collection.find().toArray(function(err, docs) {
+                          for (var qix = 0; qix < docs.length; qix++)
+                          {
+                              docs[qix].seen=0;
+                              if (Number(docs[qix].present)==1) {
+                                  text=docs[qix].alias + "," + text; 
+                              } if (Number(docs[qix].seen)==1) {
+                                  text=docs[qix].alias + " lurks seen at " + docs[qix].timeT + " ," + text;                                   
+                              }
+                          }
+                        bot.postMessageToChannel(config.slack.channel, text, params);                                                    
+                      });
+                  });
+                    
+                }
+
+            });
+
+        } catch (e) {
+           console.error("Replace token: with valid token");
+        }    
+    }
 
 
 app.use('/',express.static(__dirname + '/public'));
@@ -199,18 +245,21 @@ function openCSVFileAndProcessData() {
                                     json_log[lix].present=0;
                                     if (Number(docs[qix].present)==1)
                                     {
-                                        if (docs[qix].report) {
-                                           var report=docs[qix].alias +  " has left the office " + now.getHours() + ":" + now.getMinutes();
+                                        if (Number(docs[qix].report)==1) {
+                                           now.setHours ( now.getHours() + 2 );
+                                           var report=docs[qix].alias +  " has left the office " +  now.getHours() + ":" + now.getMinutes();
                                            console.log(docs[qix].alias , " has left the building");
                                            reportToSlack(report,":cat:");
                                        }
                                     }
                                 } else {
                                     json_log[lix].present=1;
+                                    json_log[lix].seen=1;
                                     if (Number(docs[qix].present)==0)
                                     {
-                                        var report=docs[qix].alias +  " entered the office" + now.getHours() + ":" + now.getMinutes();
-                                        if (docs[qix].report) {
+                                        now.setHours ( now.getHours() + 2 );    
+                                        var report=docs[qix].alias +  " entered the office " +  now.getHours() + ":" + now.getMinutes();
+                                        if (Number(docs[qix].report)==1) {
                                           console.log(docs[qix].alias , " entered");
                                           reportToSlack(report,":cat:");
                                         }
@@ -234,6 +283,7 @@ function openCSVFileAndProcessData() {
                         json_log[lix].alias="";
                         json_log[lix].report=0;
                         json_log[lix].present=0;
+                        json_log[lix].seen=1;
                         // Now this might create problems. Record id should be unique! :-P
                         // TODO, use getNextSeqNo()
                         if (!json_log[lix].recid) {
@@ -276,7 +326,40 @@ function deleteOldData(){
 //Periodic check
 setTimeout(deleteOldData,5000);
   
-              
+
+      
+// Att midnight all seen attributes are removed for the who reporting
+function deleteSeenToday(){
+  var now = new Date().getDay();
+  if (now != deleteSeenToday.prevTime){
+    // do something
+    console.log('New day has arrived, removed all seen');
+    
+    mydb.collection("wifi", function(err, collection) {
+          collection.find().toArray(function(err, docs) {
+            for (var qix = 0; qix < docs.length; qix++)
+            {
+                docs[qix].seen=0;
+                collection.save(docs[qix], { w: 1} , function(err, docsa) {
+                    if (err) {
+                        console.log("Error saving updated seen\n");
+                    }
+                });
+            }
+        });
+    });
+    
+       
+  }
+  deleteSeenToday.prevTime = now;
+  setTimeout(deleteSeenToday,60000);
+}
+
+//Periodic check
+setTimeout(deleteSeenToday,60000);
+
+
+
 
 app.listen(3000);
 
