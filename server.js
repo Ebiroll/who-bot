@@ -138,7 +138,7 @@ app.use(function (req, res, next) {
                     icon_emoji: ':cat:'
                 };
 
-                //console.log("message ",data);
+                console.log("message ",data);
                 if (data.text=='who') {
                     var text = "";
                     mydb.collection("wifi", function(err, collection) {
@@ -147,8 +147,8 @@ app.use(function (req, res, next) {
                           {
                               if (Number(docs[qix].present)==1 & docs[qix].alias.length>1) {
                                   text=docs[qix].alias + "," + text; 
-                              } if (Number(docs[qix].seen)==1) {
-                                  text=docs[qix].alias + " lurks seen at " + docs[qix].timeT + " ," + text;                                   
+                              } if (Number(docs[qix].seen)==1 & docs[qix].alias.length>1) {
+                                  text=docs[qix].alias + " lurks seen at " + docs[qix].lastT + " ," + text;                                   
                               }
                           }
                         bot.postMessageToChannel(config.slack.channel, text, params);                                                    
@@ -191,8 +191,8 @@ app.use("/api/who",function(req,res,next){
               {
                   if (Number(docs[qix].present)==1 & docs[qix].alias.length>1) {
                       text=docs[qix].alias + "," + text; 
-                  } if (Number(docs[qix].seen)==1) {
-                      text=docs[qix].alias + " lurks seen at " + docs[qix].timeT + " ," + text;                                   
+                  } if (Number(docs[qix].seen)==1 & docs[qix].alias.length>1 ) {
+                      text=docs[qix].alias + " lurks seen at " + docs[qix].lastT + " ," + text;                                   
                   }
               }
               res.send(text);                                                    
